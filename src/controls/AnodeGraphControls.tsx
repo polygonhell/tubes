@@ -70,7 +70,7 @@ export function AnodeGraphControls(props: Props) {
             if (e.key === 'Enter') {
               Vg = +e.currentTarget.value
               Ia = anodeCurrent(Vg, Va, props.tube)
-              IaInput.current!.value = Vg.toFixed(2)
+              IaInput.current!.value = (Ia * 1000).toFixed(0)
               e.currentTarget.blur()
               props.update(Ra, Va, Ia, Vg)
             }

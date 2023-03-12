@@ -99,6 +99,10 @@ export const _45: Parameters = JSON.parse(
   `{"id":60,"name":45,"KP":39.669899999999998,"MU":3.6118000000000001,"EX":1.5010399999999999,"KG1":5735.6599999999999,"KG2":null,"KVB":1,"VCT":0,"M":0,"Q":0,"M_1":3.4028200000000001e+38,"maxAnodePowerDissipation":10,"maxV_A":500,"maxI_A":0.080000000000000002,"minV_G1":-150,"maxV_G1":0,"gridStep":10,"B_Plus":275,"V_G1":-50,"V_G2":null,"biasCurrent":0.017999999999999999,"load":3900,"UL_TAP":null,"nextStageACImpedance":null,"tubeType":"triode","loadType":"reactive","operatingMode":"triode","enabled":1,"Cgk":null,"Cga":null,"Cak":null}`
 )
 
+export const _6SL7: Parameters = JSON.parse(
+  `{"id":14,"name":"6SL7","KP":929.45799999999997,"MU":70,"EX":1.3170900000000001,"KG1":1728.23,"KG2":null,"KVB":8269.8899999999994,"VCT":0,"M":0,"Q":0,"M_1":3.4028200000000001e+38,"maxAnodePowerDissipation":1,"maxV_A":525,"maxI_A":0.0080000000000000002,"minV_G1":-7,"maxV_G1":0,"gridStep":1,"B_Plus":365,"V_G1":-2,"V_G2":null,"biasCurrent":0.0023,"load":50000,"UL_TAP":null,"nextStageACImpedance":null,"tubeType":"triode","loadType":"resistive","operatingMode":"triode","enabled":1,"Cgk":null,"Cga":null,"Cak":null}`
+)
+
 export class Point {
   x: number = 0
   y: number = 0
