@@ -1,6 +1,8 @@
-# Getting Started with Create React App
+# Tubes
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Quick React component to visualize Tube Curves and mess with Load Lines.\
+Supports only reactive loads for now.
+![An image](images/tubes_small.jpg)
 
 ## Available Scripts
 
