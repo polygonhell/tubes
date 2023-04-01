@@ -62,7 +62,7 @@ function drawAnodeCurves(context: CanvasRenderingContext2D, tube: Parameters, sc
   curves.forEach((curve) => {
     drawCurve(context, curve.points, scale, offset)
 
-    var labelY = Number(curve.gridVolts).toFixed(0)
+    var labelY = Number(curve.gridVolts).toFixed(1)
     // Pick a point about 75% through the curve
     var Ia = tube.maxI_A * 0.5
     var Va = findClosestXOnGraph(curve.points, Ia)
@@ -114,7 +114,7 @@ function drawScales(context: CanvasRenderingContext2D, params: Parameters, scale
     context.lineTo(offset.x + scale.x * params.maxV_A, vpos)
 
     // And the Labels
-    var labelY = Number(valueY * 1000).toFixed(0)
+    var labelY = Number(valueY * 1000).toFixed(1)
     context.save()
     context.translate(offset.x - 5 - 1, vpos)
     context.scale(1, -1) // Reverse out the mirror
@@ -174,35 +174,79 @@ function drawScales(context: CanvasRenderingContext2D, params: Parameters, scale
   context.restore()
 }
 
-function drawLoadLine(context: CanvasRenderingContext2D, tube: Parameters, Va: number, Ia: number, IaMax: number, scale: Scale, offset: Offset) {
+function drawReactiveLoadLine(
+  context: CanvasRenderingContext2D,
+  tube: Parameters,
+  Vq: number,
+  Iq: number,
+  IaMax: number,
+  scale: Scale,
+  offset: Offset
+) {
   // Draw the point
   context.lineWidth = 1
   context.fillStyle = 'green'
   context.strokeStyle = 'green'
   context.setLineDash([])
 
-  context.beginPath()
-  var pos = toGraph({ x: Va, y: Ia }, scale, offset)
-  context.ellipse(pos.x, pos.y, 5, 5, 0, 0, 6.28)
   var posIaM = toGraph({ x: 0, y: IaMax }, scale, offset)
-  context.ellipse(posIaM.x, posIaM.y, 5, 5, 0, 0, 6.28)
+
+  context.beginPath()
+  // Operating point
+  var pos = toGraph({ x: Vq, y: Iq }, scale, offset)
+  context.ellipse(pos.x, pos.y, 5, 5, 0, 0, 6.28)
+  // context.ellipse(posIaM.x, posIaM.y, 5, 5, 0, 0, 6.28)
   context.fill()
   context.beginPath()
-  var dx = Va * scale.x
-  var dy = (Ia - IaMax) * scale.y
+  var dx = Vq * scale.x
+  var dy = (Iq - IaMax) * scale.y
   context.moveTo(posIaM.x, posIaM.y)
   var length = dy > dx ? (IaMax * scale.y) / dy : (tube.maxV_A * scale.x) / dx
   context.lineTo(posIaM.x + dx * length, posIaM.y + dy * length)
   context.stroke()
 }
 
-type AnodeGraphProps = React.HTMLProps<HTMLCanvasElement> & { tube: Parameters; Va: number; Ia?: number; Vg?: number; Ra: number }
+function drawResistiveLoadLine(
+  context: CanvasRenderingContext2D,
+  tube: Parameters,
+  Bplus: number,
+  Iq: number,
+  IaMax: number,
+  scale: Scale,
+  offset: Offset
+) {
+  // Draw the point
+  context.lineWidth = 1
+  context.fillStyle = 'green'
+  context.strokeStyle = 'green'
+  context.setLineDash([])
+
+  const posIaM = toGraph({ x: 0, y: IaMax }, scale, offset)
+  const posBplus = toGraph({ x: Bplus, y: 0 }, scale, offset)
+
+  const Vq = ((IaMax - Iq) / IaMax) * Bplus
+
+  context.beginPath()
+
+  // Operating point
+  var pos = toGraph({ x: Vq, y: Iq }, scale, offset)
+  context.ellipse(pos.x, pos.y, 5, 5, 0, 0, 6.28)
+  context.fill()
+
+  // Line runs IaMax to BPlus
+  // context.beginPath()
+  context.moveTo(posIaM.x, posIaM.y)
+  context.lineTo(posBplus.x, posBplus.y)
+  context.stroke()
+}
+
+type AnodeGraphProps = React.HTMLProps<HTMLCanvasElement> & { tube: Parameters; Va: number; Ia?: number; Vg?: number; Ra: number; Reactive: boolean }
 
 export function AnodeGraph(props: AnodeGraphProps) {
   var canvasRef = useRef<HTMLCanvasElement>(null)
   var Ia = props.Ia ?? (props.Vg ? anodeCurrent(props.Vg, props.Va, props.tube) : props.tube.maxI_A * 0.1)
   var Va = props.Va
-  var IaMax = Va / props.Ra + Ia
+  var IaMax = props.Reactive ? Va / props.Ra + Ia : Va / props.Ra
 
   useEffect(() => {
     var canvas = canvasRef.current
@@ -230,7 +274,11 @@ export function AnodeGraph(props: AnodeGraphProps) {
       drawAnodeCurves(context, props.tube, scale, offset)
       drawMaxAnodePowerDissipation(context, maxPower, scale, offset)
 
-      drawLoadLine(context, props.tube, Va, Ia, IaMax, scale, offset)
+      if (props.Reactive) {
+        drawReactiveLoadLine(context, props.tube, Va, Ia, IaMax, scale, offset)
+      } else {
+        drawResistiveLoadLine(context, props.tube, Va, Ia, IaMax, scale, offset)
+      }
 
       context.restore()
     }

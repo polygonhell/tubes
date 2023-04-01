@@ -103,6 +103,10 @@ export const _6SL7: Parameters = JSON.parse(
   `{"id":14,"name":"6SL7","KP":929.45799999999997,"MU":70,"EX":1.3170900000000001,"KG1":1728.23,"KG2":null,"KVB":8269.8899999999994,"VCT":0,"M":0,"Q":0,"M_1":3.4028200000000001e+38,"maxAnodePowerDissipation":1,"maxV_A":525,"maxI_A":0.0080000000000000002,"minV_G1":-7,"maxV_G1":0,"gridStep":1,"B_Plus":365,"V_G1":-2,"V_G2":null,"biasCurrent":0.0023,"load":50000,"UL_TAP":null,"nextStageACImpedance":null,"tubeType":"triode","loadType":"resistive","operatingMode":"triode","enabled":1,"Cgk":null,"Cga":null,"Cak":null}`
 )
 
+export const _300B: Parameters = JSON.parse(
+  `{"id":4,"name":"300B","KP":64.280000000000001,"MU":3.9199999999999999,"EX":1.504,"KG1":2140.3000000000002,"KG2":null,"KVB":300,"VCT":0,"M":0,"Q":0,"M_1":3.4028200000000001e+38,"maxAnodePowerDissipation":40,"maxV_A":700,"maxI_A":0.40000000000000002,"minV_G1":-140,"maxV_G1":0,"gridStep":20,"B_Plus":350,"V_G1":0,"V_G2":null,"biasCurrent":0.080000000000000002,"load":1250,"UL_TAP":null,"nextStageACImpedance":null,"tubeType":"triode","loadType":"reactive","operatingMode":"triode","enabled":1,"Cgk":8.5,"Cga":15,"Cak":4.0999999999999996}	`
+)
+
 export class Point {
   x: number = 0
   y: number = 0
@@ -213,13 +217,33 @@ export function VgFromIa(current: number, Va: number, parameters: Parameters) {
   for (;;) {
     Ia_prev = Ia
     Ia = anodeCurrent(V_G1, Va, parameters)
-    if (Ia >= current || (Ia === Ia_prev && Ia !== 0)) {
+    if (Ia >= current || Ia === Ia_prev) {
       V_G1 -= step
       step /= 10
     }
-    if (step <= 0.000001 || (Ia >= current && step <= 0.000001)) break
+    if (step <= 0.000001) break
     V_G1 += step
   }
 
   return V_G1
+}
+
+export function VaFromVgOnLine(Vg: number, VBplus: number, IaMax: number, parameters: Parameters) {
+  var Ia_prev = 0
+  var step = 100
+  var Va = 0
+  var Ia = 0
+
+  for (;;) {
+    Ia_prev = Ia
+    const targetIa = ((VBplus - Va) / VBplus) * IaMax
+    Ia = anodeCurrent(Vg, Va, parameters)
+    if (Ia >= targetIa || (Ia === Ia_prev && Ia !== 0)) {
+      Va -= step
+      step /= 10
+    }
+    if (step <= 0.000001) break
+    Va += step
+  }
+  return Va
 }
